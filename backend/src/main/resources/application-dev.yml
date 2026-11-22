@@ -1,15 +1,9 @@
 spring:
     datasource:
-        url: jdbc:h2:mem:validcep;MODE=Oracle;DEFAULT_NULL_ORDERING=HIGH
+        url: jdbc:h2:mem:validcep;MODE=Oracle;DEFAULT_NULL_ORDERING=HIGH 
         username: sa
         password: sa
         driverClassName: org.h2.Driver
-    jpa:
-        hibernate:
-            ddl-auto: validate 
-        open-in-view: false
     h2:
         console:
             enabled: true
-    flyway:
-        enabled: true
