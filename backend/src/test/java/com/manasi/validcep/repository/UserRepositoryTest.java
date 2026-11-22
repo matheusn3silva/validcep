@@ -1,10 +1,6 @@
 package com.manasi.validcep.repository;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +13,9 @@ import com.manasi.validcep.model.Address;
 import com.manasi.validcep.model.User;
 
 import jakarta.persistence.EntityManager;
+import org.hibernate.exception.ConstraintViolationException;
 
-@DataJpaTest
+@DataJpaTest(showSql = true)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles("dev")
 public class UserRepositoryTest {
@@ -54,12 +51,14 @@ public class UserRepositoryTest {
         // Given
         User user = buildUser("ana@email.com");
         user.addAddress(buildAddress("01001000"));
+        user.addAddress(buildAddress("02004000"));
 
         User saved = userRepository.save(user);
         em.flush();
         em.clear();
 
         Long addressId = saved.getAddresses().get(0).getId();
+        Long addressId2 = saved.getAddresses().get(1).getId();
 
         // When
         userRepository.deleteById(saved.getId());
@@ -69,6 +68,10 @@ public class UserRepositoryTest {
         // Then
         Address foundAddress = em.find(Address.class, addressId);
         assertNull(foundAddress);
+        Address foundAddress2 = em.find(Address.class, addressId2);
+        assertNull(foundAddress2);
+        User foundUser = em.find(User.class, saved.getId());
+        assertNull(foundUser);
     }
 
     @Test
@@ -77,15 +80,23 @@ public class UserRepositoryTest {
         User user = buildUser("ana@email.com");
         User user2 = buildUser("ana@email.com");
 
-        userRepository.save(user);
-        em.flush();
+        userRepository.saveAndFlush(user);
         em.clear();
 
         // When and Then
+        DataIntegrityViolationException exception = assertThrows(
+            DataIntegrityViolationException.class,
+            () -> userRepository.save(user2)
+        );
 
-        assertThrows(DataIntegrityViolationException.class, () -> {
-            userRepository.saveAndFlush(user2); 
-        });
+
+        ConstraintViolationException hibernateException = assertInstanceOf(
+            ConstraintViolationException.class, 
+            exception.getCause()
+        );
+
+        assertNotNull(hibernateException.getConstraintName());
+        assertTrue(hibernateException.getConstraintName().toLowerCase().contains("uk_users_email"));
     }
 
     private User buildUser(String email) {
