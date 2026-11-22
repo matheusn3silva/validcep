@@ -1,5 +1,8 @@
 package com.manasi.validcep.model;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,17 +14,25 @@ import lombok.*;
 public class Address {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JdbcTypeCode(SqlTypes.NUMERIC)
     private Long id;
-
-    private String street;
-    private String city;
-
-    @Column(length = 2)
-    private String state;
 
     @Column(nullable = false, length = 8)
     private String zipCode;
+
+    @Column(nullable = false, length = 100)
+    private String street;
+
+    @Column(nullable = false, length = 50)
+    private String city;
+
+    @Column(nullable = false, length = 2)
+    private String state;
+
+    @Column(nullable = false, length = 50)
     private String neighborhood;
+
+    @Column(nullable = false, length = 50)
     private String streetNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
