@@ -1,8 +1,5 @@
 package com.manasi.validcep.model;
 
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,7 +11,6 @@ import lombok.*;
 public class Address {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JdbcTypeCode(SqlTypes.NUMERIC)
     private Long id;
 
     @Column(nullable = false, length = 8)
